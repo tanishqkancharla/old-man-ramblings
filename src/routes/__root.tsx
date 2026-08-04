@@ -25,6 +25,7 @@ export const Route = createRootRoute({
         title: 'Recommended Readings · Old Man Ramblings',
         description: 'Ramblings by old man Mario Zechner',
         image: 'https://recommendedreadings.com/og.png',
+        imageDark: 'https://recommendedreadings.com/og-dark.png',
       }),
     ],
     links: [

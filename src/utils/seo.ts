@@ -3,10 +3,12 @@ export const seo = ({
   description,
   keywords,
   image,
+  imageDark,
 }: {
   title: string
   description?: string
   image?: string
+  imageDark?: string
   keywords?: string
 }) => {
   const tags = [
@@ -20,9 +22,27 @@ export const seo = ({
     { name: 'og:description', content: description },
     ...(image
       ? [
-          { name: 'twitter:image', content: image },
           { name: 'twitter:card', content: 'summary_large_image' },
+          { name: 'twitter:image', content: image },
+          ...(imageDark
+            ? [
+                {
+                  name: 'twitter:image',
+                  content: imageDark,
+                  media: '(prefers-color-scheme: dark)',
+                },
+              ]
+            : []),
           { name: 'og:image', content: image },
+          ...(imageDark
+            ? [
+                {
+                  name: 'og:image',
+                  content: imageDark,
+                  media: '(prefers-color-scheme: dark)',
+                },
+              ]
+            : []),
           { name: 'og:image:width', content: '1200' },
           { name: 'og:image:height', content: '630' },
         ]

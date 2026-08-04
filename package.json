@@ -8,13 +8,16 @@
     "build": "vite build && tsc --noEmit",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
-    "browser": "node tools/browser-cli/index.mjs"
+    "browser": "node tools/browser-cli/index.mjs",
+    "seed": "node --env-file=.env.local scripts/seed.mjs"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@react-spring/web": "^10.1.2",
     "@tanstack/react-router": "^1.170.18",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/react-start": "^1.168.35",
+    "@virtuoso.dev/masonry": "^1.4.3",
     "libretto": "^0.6.40",
     "libretto-browser-tools": "^0.1.2",
     "lodash-es": "^4.18.1",
@@ -22,6 +25,7 @@
     "purse-styles": "^0.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "resend": "^6.18.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

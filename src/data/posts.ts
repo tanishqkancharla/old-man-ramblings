@@ -1,65 +1,83 @@
 export type Post = {
   id: string
-  title: string
-  excerpt: string
-  date: string
+  /** Mario's X status URL */
+  tweetUrl: string
+  /** External recommended URL (card / quote / link in tweet) */
+  linkUrl: string | null
+  /** OG / card title for the link row */
+  linkTitle: string | null
+  /** Open Graph / card / article cover image */
+  imageUrl: string | null
+  /** Tweet body with "recommended reading" and link URLs stripped */
+  body: string
+  date: string // YYYY-MM-DD
+  createdAt: string // ISO 8601
 }
 
-export const posts: Post[] = [
-  {
-    id: '1',
-    title: 'Notes on agentic coding',
-    excerpt:
-      'What happens when you stop treating the model as a chatbot and start treating it as a collaborator that can touch the filesystem, run commands, and iterate.',
-    date: '2026-07-12',
-  },
-  {
-    id: '2',
-    title: 'The old man and the terminal',
-    excerpt:
-      'A short ramble about why CLI tools still win for thinking, and why GUIs keep losing the argument despite looking nicer.',
-    date: '2026-06-28',
-  },
-  {
-    id: '3',
-    title: 'Context windows are not memory',
-    excerpt:
-      'People keep calling long context "memory." It is not. It is a whiteboard you keep rewriting, and the eraser is always lurking.',
-    date: '2026-06-03',
-  },
-  {
-    id: '4',
-    title: 'On shipping ugly first',
-    excerpt:
-      'Finish the loop. Polish is a luxury of systems that already work. Most "craft" talk is procrastination in nicer clothes.',
-    date: '2026-05-19',
-  },
-  {
-    id: '5',
-    title: 'Local models, remote habits',
-    excerpt:
-      'Running models on your own machine changes the economics, but not the discipline. You still need taste, tests, and a willingness to delete.',
-    date: '2026-04-30',
-  },
-  {
-    id: '6',
-    title: 'Reading code like a detective',
-    excerpt:
-      'Start from the symptom. Follow the data. Ignore the architecture diagrams until the facts force you to care about them.',
-    date: '2026-04-08',
-  },
-  {
-    id: '7',
-    title: 'Small tools, sharp edges',
-    excerpt:
-      'Prefer programs that do one thing well enough to hurt when misused. Soft, forgiving tools teach soft, forgiving thinking.',
-    date: '2026-03-22',
-  },
-  {
-    id: '8',
-    title: 'Why I still write by hand',
-    excerpt:
-      'Not because paper is romantic. Because friction slows the wrong kind of speed — the kind that fills pages without saying anything.',
-    date: '2026-02-14',
-  },
-]
+export type RecommendedReading = {
+  id: string
+  tweetUrl: string
+  text: string
+  date: string // ISO 8601
+  createdTimestamp: number
+  likes?: number
+  retweets?: number
+  linkUrl?: string
+  linkTitle?: string
+  imageUrl?: string
+  quotedTitle?: string
+  quotedUrl?: string
+}
+
+export function toPost(reading: RecommendedReading): Post {
+  return {
+    id: reading.id,
+    tweetUrl: reading.tweetUrl,
+    linkUrl: reading.linkUrl ?? null,
+    linkTitle: reading.linkTitle?.trim() || null,
+    imageUrl: reading.imageUrl ?? null,
+    body: cleanTweetBody(reading.text, reading.linkUrl),
+    date: reading.date.slice(0, 10),
+    createdAt: reading.date,
+  }
+}
+
+export function cleanTweetBody(text: string, linkUrl?: string | null) {
+  let body = text
+  // Consume trailing periods so "recommended reading." doesn't leave a lone "."
+  body = body.replace(/\brecommended reading\.*/gi, '')
+  if (linkUrl) {
+    body = body.replaceAll(linkUrl, '')
+    try {
+      const parsed = new URL(linkUrl)
+      body = body.replaceAll(parsed.href, '')
+      body = body.replaceAll(parsed.href.replace(/\/$/, ''), '')
+    } catch {
+      // ignore invalid URLs
+    }
+  }
+  body = body.replace(/https?:\/\/\S+/gi, '')
+  body = body.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n')
+  body = body
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0 && !/^[\s.,;:!?\-–—…]+$/.test(line))
+    .join('\n')
+  // Trim leftover leading/trailing punctuation from the summary
+  // (e.g. ", great piece" after stripping "recommended reading").
+  return body
+    .trim()
+    .replace(/^[\s.,;:!?\-–—…]+/, '')
+    .replace(/[.\s]+$/, '')
+    .trim()
+}
+
+export function faviconUrl(linkUrl: string | null | undefined) {
+  if (!linkUrl) return null
+  try {
+    const host = new URL(linkUrl).hostname
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(host)}&sz=32`
+  } catch {
+    return null
+  }
+}

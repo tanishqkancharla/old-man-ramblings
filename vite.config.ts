@@ -28,6 +28,27 @@ export default defineConfig({
       srcDirectory: 'src',
     }),
     viteReact(),
-    nitro(),
+    nitro({
+      experimental: {
+        tasks: true,
+      },
+      scanDirs: [rootDir],
+      tasks: {
+        ingest: {
+          description:
+            'Fetch Mario recommended-reading posts from FxTwitter and upsert into Postgres',
+          handler: path.join(rootDir, 'tasks/ingest.ts'),
+        },
+        newsletter: {
+          description: 'Send the weekly recommended readings digest',
+          handler: path.join(rootDir, 'tasks/newsletter.ts'),
+        },
+      },
+      scheduledTasks: {
+        '0 6 * * *': 'ingest',
+        // Newsletter UI is paused; keep task + DB. Re-enable when frontend ships.
+        // '0 14 * * 1': 'newsletter',
+      },
+    } as any),
   ],
 })

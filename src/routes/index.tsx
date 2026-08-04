@@ -2,10 +2,10 @@ import { createFileRoute } from '@tanstack/react-router'
 import { style, useStyles } from 'purse-styles'
 import { Flex, Gap, radius, text } from 'maui'
 import { Masonry } from '~/components/Masonry'
-import { PostCard } from '~/components/PostCard'
-import { posts } from '~/data/posts'
+import { getPostsFn } from '~/server/posts'
 
 export const Route = createFileRoute('/')({
+  loader: () => getPostsFn(),
   component: Home,
 })
 
@@ -44,6 +44,8 @@ const masonryGapClass = style({
 })
 
 function Home() {
+  const posts = Route.useLoaderData()
+
   const headerClassName = useStyles(headerClass)
   const avatarClassName = useStyles(avatarClass)
   const titleClassName = useStyles(titleClass)
@@ -86,7 +88,7 @@ function Home() {
             Mario Zechner
           </a>
         </p>
-        <Gap height={4} />
+        <Gap height={12} />
         <p className={subtitleClassName}>
           Updated daily through Mario&apos;s X page. Maintained by{' '}
           <a
@@ -109,11 +111,7 @@ function Home() {
           .
         </p>
         <div className={masonryGapClassName} />
-        <Masonry>
-          {posts.map((post, index) => (
-            <PostCard key={post.id} post={post} index={index} />
-          ))}
-        </Masonry>
+        <Masonry posts={posts} />
       </Flex>
     </div>
   )

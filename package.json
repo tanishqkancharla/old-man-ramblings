@@ -8,7 +8,6 @@
     "build": "vite build && tsc --noEmit",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
-    "browser": "node tools/browser-cli/index.mjs",
     "seed": "node --env-file=.env.local scripts/seed.mjs"
   },
   "dependencies": {
@@ -18,8 +17,6 @@
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/react-start": "^1.168.35",
     "@virtuoso.dev/masonry": "^1.4.3",
-    "libretto": "^0.6.40",
-    "libretto-browser-tools": "^0.1.2",
     "lodash-es": "^4.18.1",
     "maui": "github:tanishqkancharla/maui#2c1a831326dd584ab46253eb6a71c85547c2755b",
     "purse-styles": "^0.2.2",

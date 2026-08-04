@@ -23,6 +23,8 @@ export const seo = ({
           { name: 'twitter:image', content: image },
           { name: 'twitter:card', content: 'summary_large_image' },
           { name: 'og:image', content: image },
+          { name: 'og:image:width', content: '1200' },
+          { name: 'og:image:height', content: '630' },
         ]
       : []),
   ]

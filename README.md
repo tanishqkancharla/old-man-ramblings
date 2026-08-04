@@ -27,10 +27,10 @@ Env vars:
 - `RESEND_API_KEY` — newsletter sending
 - `NEWSLETTER_FROM` — optional From header (verify domain in Resend)
 
-## Libretto workflow
-
-Local/debug scrape of the same FxTwitter source:
+## Manual seed / refresh
 
 ```bash
-npx libretto run src/workflows/mario-recommended-readings.ts --headless --params '{"maxPosts":20}'
+npm run seed
 ```
+
+Uses the same FxTwitter HTTP API as the daily cron (`api.fxtwitter.com`).

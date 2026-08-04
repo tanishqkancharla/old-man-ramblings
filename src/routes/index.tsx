@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { style, useStyles } from 'purse-styles'
-import { Flex, Gap, radius, text } from 'maui'
+import { Flex, Gap, colors, radius, text } from 'maui'
 import { Masonry } from '~/components/Masonry'
 import { getPostsFn } from '~/server/posts'
 
@@ -36,6 +36,13 @@ const nameLinkClass = style(text('md', 400, 'highContrast'), {
   textDecoration: 'underline',
   textUnderlineOffset: '2px',
   color: 'inherit',
+  transition: 'color 120ms ease',
+  '&:hover': {
+    color: colors.accent[11],
+  },
+  '@media (prefers-reduced-motion: reduce)': {
+    transition: 'none',
+  },
 })
 
 const masonryGapClass = style({

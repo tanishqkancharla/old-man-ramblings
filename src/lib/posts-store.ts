@@ -27,6 +27,7 @@ export async function upsertReadings(readings: RecommendedReading[]) {
 
   for (const reading of readings) {
     const post = toPost(reading)
+    const linkTitle = post.linkTitle?.trim() || null
     await db`
       INSERT INTO posts (
         id, url, text, title, excerpt, post_date, created_at,
@@ -36,7 +37,7 @@ export async function upsertReadings(readings: RecommendedReading[]) {
         ${post.id},
         ${post.tweetUrl},
         ${reading.text},
-        ${(post.linkTitle ?? post.body.slice(0, 120)) || 'Recommended reading'},
+        ${linkTitle || '(no title)'},
         ${post.body},
         ${post.date},
         ${post.createdAt},
@@ -46,7 +47,7 @@ export async function upsertReadings(readings: RecommendedReading[]) {
         ${reading.quotedTitle ?? null},
         ${reading.quotedUrl ?? null},
         ${post.linkUrl},
-        ${post.linkTitle},
+        ${linkTitle},
         ${post.imageUrl},
         ${post.body},
         NOW()
@@ -119,6 +120,17 @@ export async function countPosts() {
 }
 
 function rowToPost(row: PostRow): Post {
+  // Prefer link_label. Never fall back to body/excerpt — an older ingest used
+  // Mario's tweet text as `title` when OG title was missing.
+  const storedTitle = row.link_label?.trim() || row.title?.trim() || null
+  const linkTitle =
+    !storedTitle ||
+    storedTitle === '(no title)' ||
+    storedTitle === row.body?.trim() ||
+    storedTitle === row.excerpt?.trim()
+      ? null
+      : storedTitle
+
   return toPost({
     id: row.id,
     tweetUrl: row.url,
@@ -128,7 +140,7 @@ function rowToPost(row: PostRow): Post {
     likes: row.likes ?? undefined,
     retweets: row.retweets ?? undefined,
     linkUrl: row.link_url ?? undefined,
-    linkTitle: row.link_label || row.title || undefined,
+    linkTitle: linkTitle ?? undefined,
     imageUrl: row.image_url ?? undefined,
     quotedTitle: row.quoted_title ?? undefined,
     quotedUrl: row.quoted_url ?? undefined,

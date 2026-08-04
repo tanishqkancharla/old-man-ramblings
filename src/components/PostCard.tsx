@@ -1,10 +1,11 @@
 import { animated, useSpring } from '@react-spring/web'
-import { style, useStyles } from 'purse-styles'
+import { defineVars, style, useStyles } from 'purse-styles'
 import {
   background,
   backgroundColor,
   border,
   colors,
+  DARK_THEME,
   Gap,
   radius,
   shadow,
@@ -71,6 +72,25 @@ const actionsClass = style({
   },
 })
 
+const actionButtonVars = defineVars({
+  bg: {
+    default: 'rgba(255, 255, 255, 0.62)',
+    [DARK_THEME]: 'rgba(18, 18, 18, 0.72)',
+  },
+  bgHover: {
+    default: 'rgba(255, 255, 255, 0.82)',
+    [DARK_THEME]: 'rgba(28, 28, 28, 0.88)',
+  },
+  fg: {
+    default: 'rgba(40, 40, 40, 0.85)',
+    [DARK_THEME]: 'rgba(255, 255, 255, 0.9)',
+  },
+  border: {
+    default: 'rgba(0, 0, 0, 0.08)',
+    [DARK_THEME]: 'rgba(255, 255, 255, 0.14)',
+  },
+})
+
 const actionButtonClass = style(radius.circle, {
   display: 'inline-flex',
   alignItems: 'center',
@@ -78,15 +98,15 @@ const actionButtonClass = style(radius.circle, {
   width: 28,
   height: 28,
   padding: 0,
-  border: '1px solid rgba(0, 0, 0, 0.08)',
-  color: 'rgba(40, 40, 40, 0.85)',
-  background: 'rgba(255, 255, 255, 0.62)',
+  border: `1px solid ${actionButtonVars.border}`,
+  color: actionButtonVars.fg,
+  background: actionButtonVars.bg,
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   cursor: 'pointer',
   textDecoration: 'none',
   '&:hover': {
-    background: 'rgba(255, 255, 255, 0.82)',
+    background: actionButtonVars.bgHover,
   },
 })
 
@@ -121,6 +141,11 @@ const linkTitleClass = style(text('sm', 700, 'highContrast'), {
   WebkitLineClamp: 2,
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
+})
+
+const missingTitleClass = style(text('sm', 400, 'lowContrast'), {
+  margin: 0,
+  fontStyle: 'italic',
 })
 
 const tweetClass = style(text('sm', 400, 'lowContrast'), {
@@ -162,6 +187,7 @@ export function PostCard({ post }: { post: Post }) {
   const linkRowClassName = useStyles(linkRowClass)
   const faviconClassName = useStyles(faviconClass)
   const linkTitleClassName = useStyles(linkTitleClass)
+  const missingTitleClassName = useStyles(missingTitleClass)
   const tweetClassName = useStyles(tweetClass)
   const tweetAfterTitleClassName = useStyles(tweetAfterTitleClass)
   const dateClassName = useStyles(dateClass)
@@ -182,7 +208,8 @@ export function PostCard({ post }: { post: Post }) {
 
   const articleHref = post.linkUrl ?? post.tweetUrl
   const icon = faviconUrl(post.linkUrl)
-  const title = post.linkTitle
+  const hasTitle = Boolean(post.linkTitle?.trim())
+  const title = hasTitle ? post.linkTitle!.trim() : '(no title)'
 
   return (
     <animated.article className={className} style={springStyle}>
@@ -255,28 +282,22 @@ export function PostCard({ post }: { post: Post }) {
         target="_blank"
         rel="noreferrer"
       >
-        {title ? (
-          <div className={linkRowClassName}>
-            {icon ? (
-              <img
-                className={faviconClassName}
-                src={icon}
-                alt=""
-                width={14}
-                height={14}
-              />
-            ) : null}
-            <p className={linkTitleClassName}>{title}</p>
-          </div>
-        ) : null}
+        <div className={linkRowClassName}>
+          {icon ? (
+            <img
+              className={faviconClassName}
+              src={icon}
+              alt=""
+              width={14}
+              height={14}
+            />
+          ) : null}
+          <p className={hasTitle ? linkTitleClassName : missingTitleClassName}>
+            {title}
+          </p>
+        </div>
         {post.body ? (
-          <p
-            className={
-              title
-                ? `${tweetClassName} ${tweetAfterTitleClassName}`
-                : tweetClassName
-            }
-          >
+          <p className={`${tweetClassName} ${tweetAfterTitleClassName}`}>
             {post.body}
           </p>
         ) : null}

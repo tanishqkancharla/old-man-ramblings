@@ -129,12 +129,11 @@ function extractLink(tweet: FxTweet, text: string) {
   const card = tweet.card ?? tweet.quote?.card
   const articleTitle = tweet.quote?.article?.title?.trim()
   const cardTitle = card?.title?.trim()
+  const quoteTitle = firstQuoteLineTitle(tweet.quote?.text)
+  const title = cardTitle || articleTitle || quoteTitle || undefined
 
   if (card?.url) {
-    return {
-      url: card.url,
-      title: cardTitle || articleTitle || undefined,
-    }
+    return { url: card.url, title }
   }
 
   if (articleTitle) {
@@ -147,22 +146,16 @@ function extractLink(tweet: FxTweet, text: string) {
 
   const fromText = firstHttpUrl(text)
   if (fromText) {
-    return { url: fromText, title: cardTitle || undefined }
+    return { url: fromText, title }
   }
 
   const fromQuote = firstHttpUrl(tweet.quote?.text ?? '')
   if (fromQuote) {
-    return {
-      url: fromQuote,
-      title: cardTitle || undefined,
-    }
+    return { url: fromQuote, title }
   }
 
   if (tweet.quote?.url) {
-    return {
-      url: tweet.quote.url,
-      title: cardTitle || undefined,
-    }
+    return { url: tweet.quote.url, title }
   }
 
   return null
@@ -179,6 +172,15 @@ function extractImage(tweet: FxTweet) {
     tweet.quote?.media?.videos?.[0]?.thumbnail_url ||
     undefined
   )
+}
+
+/** First non-URL line of a quote tweet — often the article title when card is thin. */
+function firstQuoteLineTitle(quoteText?: string) {
+  const line = (quoteText ?? '')
+    .split('\n')
+    .map((part) => part.trim())
+    .find((part) => part.length > 0 && !/^https?:\/\//i.test(part))
+  return line || undefined
 }
 
 function firstHttpUrl(text: string) {

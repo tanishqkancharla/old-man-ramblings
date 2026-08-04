@@ -69,7 +69,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <ClientOnly fallback={null}>
           <MauiProvider>
-            <Padding x={8} y={16}>
+            <Padding x={16} y={16}>
               {children}
             </Padding>
           </MauiProvider>

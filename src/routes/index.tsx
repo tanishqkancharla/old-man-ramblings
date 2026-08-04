@@ -12,7 +12,6 @@ export const Route = createFileRoute('/')({
 const MARIO_X = 'https://x.com/badlogicgames'
 const MARIO_AVATAR =
   'https://pbs.twimg.com/profile_images/1553485821767991296/87k3l720_200x200.jpg'
-const TANISHQ_GITHUB = 'https://github.com/tanishqkancharla'
 const REPO_URL = 'https://github.com/tanishqkancharla/old-man-ramblings'
 
 const headerClass = style({
@@ -50,6 +49,18 @@ const masonryGapClass = style({
   flexShrink: 0,
 })
 
+const pageClass = style({
+  maxWidth: 1080,
+  marginInline: 'auto',
+  width: '100%',
+})
+
+const introClass = style({
+  maxWidth: '72ch',
+  width: '100%',
+  marginInline: 'auto',
+})
+
 function Home() {
   const posts = Route.useLoaderData()
 
@@ -59,64 +70,49 @@ function Home() {
   const subtitleClassName = useStyles(subtitleClass)
   const nameLinkClassName = useStyles(nameLinkClass)
   const masonryGapClassName = useStyles(masonryGapClass)
-  const pageClassName = useStyles(
-    style({
-      maxWidth: '72ch',
-      marginInline: 'auto',
-      width: '100%',
-    }),
-  )
+  const pageClassName = useStyles(pageClass)
+  const introClassName = useStyles(introClass)
 
   return (
     <div className={pageClassName}>
       <Flex column>
-        <div className={headerClassName}>
-          <a href={MARIO_X} target="_blank" rel="noreferrer">
-            <img
-              className={avatarClassName}
-              src={MARIO_AVATAR}
-              alt="Mario Zechner"
-              width={24}
-              height={24}
-            />
-          </a>
+        <div className={introClassName}>
+          <div className={headerClassName}>
+            <a href={MARIO_X} target="_blank" rel="noreferrer">
+              <img
+                className={avatarClassName}
+                src={MARIO_AVATAR}
+                alt="Mario Zechner"
+                width={24}
+                height={24}
+              />
+            </a>
+          </div>
+          <Gap height={16} />
+          <h1 className={titleClassName}>Recommended Readings</h1>
+          <Gap height={12} />
+          <p className={subtitleClassName}>
+            Ramblings by old man{' '}
+            <a
+              className={nameLinkClassName}
+              href={MARIO_X}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Mario Zechner
+            </a>
+            . Updated daily from his X profile.{' '}
+            <a
+              className={nameLinkClassName}
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Github
+            </a>
+            .
+          </p>
         </div>
-        <Gap height={12} />
-        <h1 className={titleClassName}>Recommended Readings</h1>
-        <Gap height={12} />
-        <p className={subtitleClassName}>
-          Ramblings by old man{' '}
-          <a
-            className={nameLinkClassName}
-            href={MARIO_X}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Mario Zechner
-          </a>
-        </p>
-        <Gap height={12} />
-        <p className={subtitleClassName}>
-          Updated daily through Mario&apos;s X page. Maintained by{' '}
-          <a
-            className={nameLinkClassName}
-            href={TANISHQ_GITHUB}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Tanishq Kancharla
-          </a>{' '}
-          on{' '}
-          <a
-            className={nameLinkClassName}
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Github
-          </a>
-          .
-        </p>
         <div className={masonryGapClassName} />
         <Masonry posts={posts} />
       </Flex>

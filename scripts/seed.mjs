@@ -73,8 +73,13 @@ function extractLink(tweet, text) {
   const card = tweet.card ?? tweet.quote?.card
   const articleTitle = tweet.quote?.article?.title?.trim()
   const cardTitle = card?.title?.trim()
+  const quoteTitle = (tweet.quote?.text ?? '')
+    .split('\n')
+    .map((part) => part.trim())
+    .find((part) => part.length > 0 && !/^https?:\/\//i.test(part))
+  const title = cardTitle || articleTitle || quoteTitle || undefined
   if (card?.url) {
-    return { url: card.url, title: cardTitle || articleTitle || undefined }
+    return { url: card.url, title }
   }
   if (articleTitle) {
     const fromQuote = firstHttpUrl(tweet.quote?.text ?? '')
@@ -84,11 +89,11 @@ function extractLink(tweet, text) {
     }
   }
   const fromText = firstHttpUrl(text)
-  if (fromText) return { url: fromText, title: cardTitle || undefined }
+  if (fromText) return { url: fromText, title }
   const fromQuote = firstHttpUrl(tweet.quote?.text ?? '')
-  if (fromQuote) return { url: fromQuote, title: cardTitle || undefined }
+  if (fromQuote) return { url: fromQuote, title }
   if (tweet.quote?.url) {
-    return { url: tweet.quote.url, title: cardTitle || undefined }
+    return { url: tweet.quote.url, title }
   }
   return null
 }
@@ -139,12 +144,13 @@ while (posts.length < maxPosts) {
     const link = extractLink(tweet, text)
     const cleaned = cleanBody(text, link?.url)
     const date = new Date(createdTimestamp * 1000).toISOString()
+    const linkTitle = link?.title?.trim() || null
 
     posts.push({
       id,
       url: tweet.url ?? `https://x.com/badlogicgames/status/${id}`,
       text,
-      title: (link?.title ?? cleaned.slice(0, 120)) || 'Recommended reading',
+      title: linkTitle || '(no title)',
       excerpt: cleaned,
       body: cleaned,
       date,
@@ -158,7 +164,7 @@ while (posts.length < maxPosts) {
         null,
       quotedUrl: tweet.quote?.url ?? null,
       linkUrl: link?.url ?? null,
-      linkLabel: link?.title ?? null,
+      linkLabel: linkTitle,
       imageUrl: extractImage(tweet) ?? null,
     })
     if (posts.length >= maxPosts) break

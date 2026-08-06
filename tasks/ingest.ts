@@ -7,8 +7,8 @@ export default defineTask({
     description: 'Fetch Mario recommended-reading posts from FxTwitter and upsert into Postgres',
   },
   async run() {
-    const result = await ingestRecommendedReadings({ maxPosts: 200 })
-    console.log('ingest-complete', result)
+    // Keep under Vercel Hobby ~10s limit: ~2 FxTwitter pages + batched upserts.
+    const result = await ingestRecommendedReadings({ maxPosts: 40 })
     return { result }
   },
 })

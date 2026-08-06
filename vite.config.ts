@@ -45,7 +45,8 @@ export default defineConfig({
         },
       },
       scheduledTasks: {
-        '0 6 * * *': 'ingest',
+        // Every 6 hours — small catch-up fetch (see tasks/ingest.ts).
+        '0 */6 * * *': 'ingest',
         // Newsletter UI is paused; keep task + DB. Re-enable when frontend ships.
         // '0 14 * * 1': 'newsletter',
       },

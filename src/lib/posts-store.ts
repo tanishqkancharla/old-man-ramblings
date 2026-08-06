@@ -20,60 +20,80 @@ type PostRow = {
   body: string | null
 }
 
+const UPSERT_CONCURRENCY = 10
+
 export async function upsertReadings(readings: RecommendedReading[]) {
   await ensureSchema()
   const db = getSql()
   let upserted = 0
 
-  for (const reading of readings) {
-    const post = toPost(reading)
-    const linkTitle = post.linkTitle?.trim() || null
-    await db`
-      INSERT INTO posts (
-        id, url, text, title, excerpt, post_date, created_at,
-        created_timestamp, likes, retweets, quoted_title, quoted_url,
-        link_url, link_label, image_url, body, ingested_at
-      ) VALUES (
-        ${post.id},
-        ${post.tweetUrl},
-        ${reading.text},
-        ${linkTitle || '(no title)'},
-        ${post.body},
-        ${post.date},
-        ${post.createdAt},
-        ${reading.createdTimestamp},
-        ${reading.likes ?? null},
-        ${reading.retweets ?? null},
-        ${reading.quotedTitle ?? null},
-        ${reading.quotedUrl ?? null},
-        ${post.linkUrl},
-        ${linkTitle},
-        ${post.imageUrl},
-        ${post.body},
-        NOW()
-      )
-      ON CONFLICT (id) DO UPDATE SET
-        url = EXCLUDED.url,
-        text = EXCLUDED.text,
-        title = EXCLUDED.title,
-        excerpt = EXCLUDED.excerpt,
-        post_date = EXCLUDED.post_date,
-        created_at = EXCLUDED.created_at,
-        created_timestamp = EXCLUDED.created_timestamp,
-        likes = EXCLUDED.likes,
-        retweets = EXCLUDED.retweets,
-        quoted_title = EXCLUDED.quoted_title,
-        quoted_url = EXCLUDED.quoted_url,
-        link_url = EXCLUDED.link_url,
-        link_label = EXCLUDED.link_label,
-        image_url = EXCLUDED.image_url,
-        body = EXCLUDED.body,
-        ingested_at = NOW()
-    `
-    upserted += 1
+  for (let i = 0; i < readings.length; i += UPSERT_CONCURRENCY) {
+    const chunk = readings.slice(i, i + UPSERT_CONCURRENCY)
+    await Promise.all(
+      chunk.map(async (reading) => {
+        const post = toPost(reading)
+        const linkTitle = post.linkTitle?.trim() || null
+        await db`
+          INSERT INTO posts (
+            id, url, text, title, excerpt, post_date, created_at,
+            created_timestamp, likes, retweets, quoted_title, quoted_url,
+            link_url, link_label, image_url, body, ingested_at
+          ) VALUES (
+            ${post.id},
+            ${post.tweetUrl},
+            ${reading.text},
+            ${linkTitle || '(no title)'},
+            ${post.body},
+            ${post.date},
+            ${post.createdAt},
+            ${reading.createdTimestamp},
+            ${reading.likes ?? null},
+            ${reading.retweets ?? null},
+            ${reading.quotedTitle ?? null},
+            ${reading.quotedUrl ?? null},
+            ${post.linkUrl},
+            ${linkTitle},
+            ${post.imageUrl},
+            ${post.body},
+            NOW()
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            url = EXCLUDED.url,
+            text = EXCLUDED.text,
+            title = EXCLUDED.title,
+            excerpt = EXCLUDED.excerpt,
+            post_date = EXCLUDED.post_date,
+            created_at = EXCLUDED.created_at,
+            created_timestamp = EXCLUDED.created_timestamp,
+            likes = EXCLUDED.likes,
+            retweets = EXCLUDED.retweets,
+            quoted_title = EXCLUDED.quoted_title,
+            quoted_url = EXCLUDED.quoted_url,
+            link_url = EXCLUDED.link_url,
+            link_label = EXCLUDED.link_label,
+            image_url = EXCLUDED.image_url,
+            body = EXCLUDED.body,
+            ingested_at = NOW()
+        `
+      }),
+    )
+    upserted += chunk.length
   }
 
   return upserted
+}
+
+/** Latest successful row write time — used to throttle catch-up ingests. */
+export async function getLatestIngestedAt(): Promise<number | null> {
+  await ensureSchema()
+  const db = getSql()
+  const rows = (await db`
+    SELECT MAX(ingested_at) AS latest FROM posts
+  `) as Array<{ latest: string | Date | null }>
+  const latest = rows[0]?.latest
+  if (!latest) return null
+  const ms = new Date(latest).getTime()
+  return Number.isFinite(ms) ? ms : null
 }
 
 export async function listPosts(limit = 200): Promise<Post[]> {

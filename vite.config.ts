@@ -45,8 +45,8 @@ export default defineConfig({
         },
       },
       scheduledTasks: {
-        // Every 6 hours — small catch-up fetch (see tasks/ingest.ts).
-        '0 */6 * * *': 'ingest',
+        // Hobby: once per day max. Homepage also catch-up-ingests if stale.
+        '0 6 * * *': 'ingest',
         // Newsletter UI is paused; keep task + DB. Re-enable when frontend ships.
         // '0 14 * * 1': 'newsletter',
       },
